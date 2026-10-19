@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Arif Keno</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--card:rgba(255,255,255,.07);--line:rgba(255,255,255,.13);--tx:#f4f4ff;--hint:#9aa0c3;--gold:#ffc83d;--green:#2ee59d;--btn:linear-gradient(135deg,#ffc83d,#ff8a3d)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:12px 12px 96px;color:var(--tx);font:15px/1.35 system-ui,-apple-system,sans-serif;background:radial-gradient(900px 520px at 50% -10%,#3b2a80 0%,#0b0d1f 62%) fixed}
+.brand{text-align:center;font-weight:800;letter-spacing:4px;font-size:13px;color:var(--gold);margin-bottom:8px;text-shadow:0 0 12px rgba(255,200,61,.6)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0;backdrop-filter:blur(8px)}
+.big{font-size:24px;font-weight:800}.hint{color:var(--hint);font-size:12px}
+#cd{color:var(--gold);text-shadow:0 0 14px rgba(255,200,61,.5);font-variant-numeric:tabular-nums}
+#pool{background:var(--btn);-webkit-background-clip:text;background-clip:text;color:transparent}
+#grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+.c{aspect-ratio:1;border:1px solid var(--line);border-radius:50%;background:rgba(255,255,255,.06);color:var(--tx);font-size:14px;font-weight:700;transition:.15s}
+.c:active{transform:scale(.88)}
+.c.sel{background:var(--btn);color:#2a1700;border-color:transparent;box-shadow:0 0 14px rgba(255,170,61,.75);transform:scale(1.06)}
+#balls{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;min-height:30px}
+.b{aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#ffc83d 45%,#c98a00);color:#3a2600;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;animation:pop .35s}
+.b.m{background:radial-gradient(circle at 30% 30%,#c9ffe9,#2ee59d 50%,#0a9a63);color:#04301f;box-shadow:0 0 12px rgba(46,229,157,.8)}
+@keyframes pop{0%{transform:translateY(-70px) scale(.3);opacity:0}60%{transform:translateY(6px) scale(1.2);opacity:1}100%{transform:none}}
+.row{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+.chip,.act{flex:1;min-width:58px;border:1px solid var(--line);border-radius:12px;padding:11px 4px;background:var(--card);color:var(--tx);font-weight:700}
+.chip.on{background:var(--btn);color:#2a1700;border-color:transparent}
+#cust{width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--tx);font-size:15px}
+#go{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:15px;border:0;border-radius:16px;background:var(--btn);color:#2a1700;font-size:17px;font-weight:800;box-shadow:0 8px 24px rgba(255,138,61,.45)}
+#go:disabled{opacity:.45;box-shadow:none}
+.win{color:var(--green);font-weight:700}#sheet{position:fixed;inset:0;background:rgba(5,6,18,.72);display:none;align-items:flex-end;z-index:20}#sheet.on{display:flex}.sh{width:100%;background:#15183a;border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));border:1px solid var(--line)}.sh input{width:100%;margin:6px 0;padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--tx);font-size:16px}.sh .act{width:100%;margin-top:8px}.go2{background:var(--btn);color:#2a1700;border:0}.feed{font-size:13px;margin-top:6px;display:flex;flex-direction:column;gap:5px}.fr{display:flex;justify-content:space-between;gap:8px}.fr b{color:var(--gold)}
+.mascot{display:flex;gap:10px;align-items:center;font-weight:600}
+.face{font-size:36px;display:inline-block;animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px) rotate(-6deg)}}
+.mascot.shake .face{animation:shk .25s infinite}
+@keyframes shk{25%{transform:translate(-3px,2px) rotate(-14deg)}75%{transform:translate(3px,-2px) rotate(14deg)}}
+.cf{position:fixed;top:-14px;width:8px;height:14px;z-index:9;animation:fall 2.4s linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+</style></head><body>
+<div class="brand">🎰 ARIF KENO</div>
+<div class="top"><div><div class="hint" id="rid">Round</div><div class="big" id="cd">--:--</div></div>
+<div style="text-align:right"><div class="hint">Balance</div><div class="big" id="bal">-</div></div></div>
+<button class="act" id="sendbtn" style="width:100%;margin:10px 0 0">💸 Send birr to a player</button>
+<div class="card mascot" id="mascot"><span class="face" id="face">🤪</span><span id="msg">Welcome! Pick your lucky numbers.</span></div>
+
+<div class="hint" id="cnt">Pick numbers</div>
+<div class="hint" id="pay"></div>
+<div id="grid"></div>
+<div class="row" id="stakes"></div>
+<input id="cust" type="number" inputmode="decimal" min="1" placeholder="Or type your own stake in birr (no limit)">
+<div class="row"><button class="act" id="qp">🎲 Quick pick</button><button class="act" id="clr">🧹 Clear</button></div>
+<div class="card"><div class="hint" id="lt">Last draw</div><div id="balls"></div><div id="res"></div></div>
+<div class="card"><div class="hint">🔥 Live bets this round</div><div class="feed" id="live">waiting for bets...</div></div>
+<div class="card"><div class="hint">🏆 Recent winners</div><div class="feed" id="wins">no winners yet</div></div>
+<div class="card"><div class="hint">Your tickets this round</div><div id="mine">none yet</div></div>
+<div id="sheet"><div class="sh"><div class="big">💸 Send birr</div>
+<div id="s1"><input id="tph" type="tel" inputmode="tel" placeholder="Their phone number, e.g. 0911234567">
+<input id="tam" type="number" inputmode="decimal" placeholder="Amount in birr">
+<button class="act go2" id="tgo">Continue</button></div>
+<div id="s2" style="display:none"><div class="card" id="tconf"></div><button class="act go2" id="tok">✅ Confirm and send</button></div>
+<button class="act" id="tx">Close</button></div></div>
+<button id="go" disabled>Place ticket</button>
+<script>
+const tg=window.Telegram.WebApp;tg.ready();tg.expand();try{tg.setHeaderColor("#0b0d1f");tg.setBackgroundColor("#0b0d1f")}catch(e){}
+const $=id=>document.getElementById(id);
+const fmt=s=>(s/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+" birr";
+let S=null,picks=new Set(),stake=null,skew=0,seen=null,busy=false,timer=null;
+async function api(p,o){const r=await fetch(p,{headers:{"X-Init-Data":tg.initData,"Content-Type":"application/json"},...o});
+const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||"Something went wrong");return j}
+const grid=$("grid");
+for(let n=1;n<=80;n++){const b=document.createElement("button");b.className="c";b.textContent=n;b.dataset.n=n;
+b.onclick=()=>{if(picks.has(n))picks.delete(n);else if(picks.size>=S.max_picks)return tg.HapticFeedback.notificationOccurred("error");else picks.add(n);
+tg.HapticFeedback.selectionChanged();draw()};grid.appendChild(b)}
+$("clr").onclick=()=>{picks.clear();draw()};
+$("qp").onclick=()=>{const k=picks.size||5;picks=new Set();while(picks.size<k)picks.add(1+Math.floor(Math.random()*80));draw()};
+function draw(){
+ for(const b of grid.children)b.classList.toggle("sel",picks.has(+b.dataset.n));
+ $("cnt").textContent=`Your numbers (${picks.size}/${S?S.max_picks:10}): `+([...picks].sort((a,b)=>a-b).join(", ")||"none yet");
+ const left=S?Math.max(0,S.round.closes_at-(Date.now()/1000+skew)):0;
+ $("cd").textContent=Math.floor(left/60)+":"+String(Math.floor(left%60)).padStart(2,"0");
+ $("pay").textContent=S&&S.paytable[picks.size]?"Pays (stake ×): "+Object.entries(S.paytable[picks.size]).map(([h,m])=>`${h} hits ×${m/100}`).join(" · ")+(S.max_win?" · Max prize per ticket "+fmt(S.max_win):""):"";
+ $("go").disabled=!S||busy||!picks.size||left<2;
+ const hot=S&&left>0&&left<10;$("mascot").classList.toggle("shake",hot);
+ if(S&&Date.now()>sayLock){$("face").textContent=hot?"😵‍💫":"🤪";$("msg").textContent=hot?"The balls are going wild... 🌀":IDLE[Math.floor(Date.now()/10000)%IDLE.length]}
+ $("go").textContent=picks.size?`Place ticket - ${S?fmt(stake):""}`:"Pick numbers first";
+}
+function show(){
+ $("rid").textContent="Round #"+S.round.id;$("bal").textContent=fmt(S.balance);renderFeed();
+ if(!stake)stake=S.stakes[0]*100;
+ $("stakes").innerHTML="";
+ for(const b of S.stakes){const c=document.createElement("button");c.className="chip"+(b*100==stake?" on":"");c.textContent=b+" birr";
+ c.onclick=()=>{stake=b*100;$("cust").value="";show();draw()};$("stakes").appendChild(c)}
+ $("mine").innerHTML=S.mine.length?S.mine.map(t=>`#${t.id}: ${t.picks.join(", ")} (${fmt(t.stake)})`).join("<br>"):"none yet";
+ if(S.last&&S.last.id!==seen){const first=seen===null;seen=S.last.id;reveal(S.last,!first)}
+ draw();
+}
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function renderFeed(){const f=S.feed;
+ $("live").innerHTML=f.live.length?f.live.map(t=>`<div class="fr"><span>👤 ${esc(t.who)}</span><span>${t.n} numbers · <b>${fmt(t.stake)}</b></span></div>`).join(""):"waiting for bets...";
+ $("wins").innerHTML=f.wins.length?f.wins.map(t=>`<div class="fr"><span>🎉 ${esc(t.who)} <span class="hint">(${t.hits} hits)</span></span><b>+${fmt(t.prize)}</b></div>`).join(""):"no winners yet"}
+function reveal(L,animate){
+ $("lt").textContent="Draw of round #"+L.id;$("balls").innerHTML="";$("res").innerHTML="";
+ const mineNums=new Set(L.mine.flatMap(t=>t.picks));
+ const finish=()=>{const won=L.mine.reduce((a,t)=>a+t.prize,0);
+  $("res").innerHTML=L.mine.length?L.mine.map(t=>`#${t.id}: ${t.hits} hits - `+(t.prize>0?`<span class="win">won ${fmt(t.prize)}</span>`:"no prize")).join("<br>"):'<span class="hint">You had no ticket in this round.</span>';
+  if(animate){if(won>0){tg.HapticFeedback.notificationOccurred("success");confetti();say(pick(WINS),"🤑")}else if(L.mine.length)say(pick(LOSES),"🙈")}};
+ L.draw.forEach((n,i)=>setTimeout(()=>{const d=document.createElement("div");d.className="b"+(mineNums.has(n)?" m":"");d.textContent=n;$("balls").appendChild(d);
+  if(animate)tg.HapticFeedback.impactOccurred("light");if(i==L.draw.length-1)finish()},animate?i*250:0));
+}
+let sayLock=0;const pick=a=>a[Math.floor(Math.random()*a.length)];
+const WINS=["Cha-ching! You won! 🤑 Buy yourself a buna ☕","Look at you, the Keno champion! 🏆","The balls love you today! 🥳"];
+const LOSES=["No prize this time. The balls are shy today 🙈","Not this round. Remember, it is just for fun 😉","The balls had other plans... 🎈"];
+const IDLE=["Pick your lucky numbers! 🍀","Tip: only play with money you can afford to lose 😉","Shake, shake, shake... 🎲","Feeling lucky, or just hungry? 🤔"];
+function say(t,f){sayLock=Date.now()+8000;$("msg").textContent=t;if(f)$("face").textContent=f}
+function confetti(){for(let i=0;i<50;i++){const e=document.createElement("i");e.className="cf";e.style.left=Math.random()*100+"vw";e.style.background=["#f5b301","#2ecc71","#e74c3c","#3498db","#9b59b6"][i%5];e.style.animationDelay=Math.random()*.6+"s";document.body.appendChild(e);setTimeout(()=>e.remove(),3400)}}
+async function load(){try{const j=await api("/api/state");skew=j.now-Date.now()/1000;S=j;show()}
+catch(e){clearInterval(timer);document.body.innerHTML='<div class="card">'+e.message+"</div>"}}
+$("go").onclick=async()=>{busy=true;draw();
+ try{const j=await api("/api/bet",{method:"POST",body:JSON.stringify({picks:[...picks],stake})});
+  picks.clear();tg.HapticFeedback.notificationOccurred("success")}catch(e){tg.showAlert(e.message)}
+ busy=false;await load()};
+$("cust").oninput=e=>{const v=Math.round(parseFloat(e.target.value)*100);if(S&&v>=S.min_bet){stake=v;show();draw()}};
+let TR=null;const sh=$("sheet");
+$("sendbtn").onclick=()=>{TR=null;$("s1").style.display="";$("s2").style.display="none";$("tph").value="";$("tam").value="";sh.classList.add("on")};
+$("tx").onclick=()=>sh.classList.remove("on");
+$("tgo").onclick=async()=>{const amount=Math.round(parseFloat($("tam").value)*100);
+ if(!(amount>0))return tg.showAlert("Enter an amount.");
+ try{const r=await api("/api/transfer/check",{method:"POST",body:JSON.stringify({phone:$("tph").value,amount})});
+  TR={phone:r.phone,amount};
+  $("tconf").innerHTML=`Send <b>${fmt(amount)}</b> to <b>${esc(r.name)}</b> (${esc(r.masked)})?<br><span class="hint">Transfers cannot be undone.</span>`;
+  $("s1").style.display="none";$("s2").style.display=""}catch(e){tg.showAlert(e.message)}};
+$("tok").onclick=async()=>{if(!TR)return;$("tok").disabled=true;
+ try{await api("/api/transfer",{method:"POST",body:JSON.stringify(TR)});sh.classList.remove("on");tg.HapticFeedback.notificationOccurred("success");tg.showAlert("✅ Sent!");await load()}
+ catch(e){tg.showAlert(e.message)}
+ $("tok").disabled=false};
+load();timer=setInterval(load,2500);setInterval(()=>S&&draw(),500);
+</script></body></html>
